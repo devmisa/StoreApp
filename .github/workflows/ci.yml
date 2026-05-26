@@ -6,26 +6,46 @@ on:
   pull_request:
     branches: [ "main" ]
 
+env:
+  DOTNET_VERSION: '10.0.x'
+  BUILD_CONFIGURATION: 'Release'
+
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
+    name: Build and Test
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-    - name: Setup .NET
+    - name: Setup .NET ${{ env.DOTNET_VERSION }}
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 9.0.x 
-        
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
     - name: Install .NET Aspire Workload
       run: dotnet workload install aspire
+
+    - name: Display .NET version
+      run: dotnet --version
 
     - name: Restore dependencies
       run: dotnet restore StoreApp.sln
 
-    - name: Build Solution
-      run: dotnet build StoreApp.sln --no-restore --configuration Release
+    - name: Check code formatting
+      run: dotnet format --verify-no-changes --verbosity diagnostic || true
 
-    - name: Test
-      run: dotnet test StoreApp.sln --no-build --verbosity normal
+    - name: Build solution
+      run: dotnet build StoreApp.sln --no-restore --configuration ${{ env.BUILD_CONFIGURATION }}
+
+    - name: Run unit tests
+      run: dotnet test StoreApp.API.Tests/StoreApp.API.Tests.csproj --no-build --configuration ${{ env.BUILD_CONFIGURATION }} --logger "console;verbosity=normal" --logger "trx;LogFileName=test-results.trx"
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: '**/test-results.trx'
+        retention-days: 30
