@@ -1,0 +1,31 @@
+name: .NET Aspire CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x 
+        
+    - name: Install .NET Aspire Workload
+      run: dotnet workload install aspire
+
+    - name: Restore dependencies
+      run: dotnet restore StoreApp.sln
+
+    - name: Build Solution
+      run: dotnet build StoreApp.sln --no-restore --configuration Release
+
+    - name: Test
+      run: dotnet test StoreApp.sln --no-build --verbosity normal
