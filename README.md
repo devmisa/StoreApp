@@ -2,7 +2,7 @@
 
 Uma plataforma de processamento de pedidos em nível empresarial 
 construída com .NET 10, demonstrando arquitetura de sistemas distribuídos 
-com as melhores práticas.
+com as melhores práticas em Vertical Slice Architecture (Arquitetura em Fatias Verticais).
 
 ## ✨ Funcionalidades
 
